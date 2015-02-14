@@ -1,0 +1,85 @@
+var num, currPlayer, data, win_checker;
+
+swapPlayers = function(){
+	if(currPlayer == 0 || currPlayer == 2){
+		currPlayer = 1;
+		$('displaytag').html("Player 1(Blue)'s Turn");
+	}
+	else if(currPlayer == 1){
+		currPlayer = 2;
+		$('displaytag').html("Player 2(Pink)'s Turn");
+	}
+}
+
+startGame = function(){
+	$('displaytag').html("Let's Play Connect 4!");
+	$('#board').append('<displaytag id="start"> Press To Start! </displaytag>');
+	$('#board').on('click',function(evt){
+		num = 0;
+		currPlayer = 0;
+		data = [new column(),new column(),new column(),new column(),new column(),new column(),new column()];
+		win_checker = new checker();
+		$('#start').remove();
+		swapPlayers();
+		$('#board').attr('onclick','').unbind('click');
+		gameProper();
+	});
+}
+
+gameProper = function(){
+	$('#board').on('click',function(evt){ 
+		play(evt);
+	});
+}
+
+endGame = function(c){
+	if(c == 1){
+		$('displaytag').html("Player 1(Blue) Wins!");
+	}
+	else if(c == 2){
+		$('displaytag').html("Player 2(Pink) Wins!");
+	}
+	else{
+		$('displaytag').html("No Moves Left!");
+	}
+	$('#board').attr('onclick','').unbind('click');
+	$('#board').on('click',function(evt){
+		$('#board').attr('onclick','').unbind('click');
+		for(i=0;i<=num;i++){
+			$('#item' + i).remove();
+		}
+		startGame();
+	});
+}
+
+play = function(evt){
+	var col = 0;
+	col = Math.floor((evt.pageX - $('#board').offset().left)/100);
+	if(data[col].num <6){
+		var value = col*100+17.5;
+		if(currPlayer == 1){
+			$('#board').append('<%= image_tag("blue.png") %>');
+		}
+		else{
+			$('#board').append('<%= image_tag("pink.png") %>');
+		}
+		$('#board').children()[$('#board').children().length-1].id = "item" + num;
+		$("#item"+num).css({"position": "absolute", "left": value + "px", "top": "0px"});
+		$("#item"+num).animate({"top": 500-(data[col].num*100)+17.5 + "px"}, 360);
+		var r = data[col].add(currPlayer);
+		if(win_checker.check(data,5-r,col)){
+			endGame(currPlayer);
+		}
+		else if(win_checker.checkIfFilled(data)){
+			endGame(0);
+		}
+		else{
+			swapPlayers();
+			num++;
+		}
+	}
+}
+
+ $(document).ready(function(){
+	startGame();
+ });
